@@ -2,3 +2,4 @@ flask==2.0.1
 flask-socketio==5.1.1
 python-dotenv==0.19.1
 eventlet==0.33.0 
+werkzeug==2.0.1  # Add this specific version constraint
