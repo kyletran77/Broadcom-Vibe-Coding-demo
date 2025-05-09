@@ -285,5 +285,6 @@ if __name__ == '__main__':
     os.makedirs('templates', exist_ok=True)
     os.makedirs('static', exist_ok=True)
     
-    # Start the server
-    socketio.run(app, host='0.0.0.0', port=5001, debug=True) 
+    # Use PORT env variable for compatibility with Render and other PaaS
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=True) 
