@@ -1,0 +1,115 @@
+
+Okay, this sounds like a fun project! Let's plan out a simple, locally-hosted Pictionary game.
+
+Here's a breakdown of the screens, functions, and a recommended tech stack:
+
+### Screens
+
+1.  **Lobby/Setup Screen:**
+    *   **Purpose:** Allow players to join and start the game.
+    *   **Elements:**
+        *   Input field for player names.
+        *   A list of players who have joined.
+        *   A "Start Game" button (perhaps only visible to the first player or a designated host).
+
+2.  **Game Screen (Drawer's View):**
+    *   **Purpose:** For the person drawing.
+    *   **Elements:**
+        *   The secret word to draw.
+        *   A drawing canvas (e.g., using HTML5 Canvas).
+        *   Basic drawing tools (pen, eraser, color picker - keep it simple!).
+        *   A timer for the round.
+        *   A display of current guesses from other players (read-only for the drawer).
+        *   Button to "Skip Word" (optional, might have a penalty or limit).
+
+3.  **Game Screen (Guesser's View):**
+    *   **Purpose:** For the players who are guessing.
+    *   **Elements:**
+        *   A view of the drawing canvas (updated in real-time).
+        *   An input field to type guesses.
+        *   A display of guesses made by all guessers (including their own).
+        *   A timer for the round.
+        *   A display of who is currently drawing.
+
+4.  **Round Summary Screen:**
+    *   **Purpose:** Displayed after each round.
+    *   **Elements:**
+        *   The word that was being drawn.
+        *   Who guessed it correctly (if anyone).
+        *   Updated scores for all players.
+        *   A "Next Round" button.
+
+5.  **Game Over Screen:**
+    *   **Purpose:** Displayed when the game ends.
+    *   **Elements:**
+        *   Final scores.
+        *   A "Play Again" button (which could take everyone back to the Lobby/Setup Screen).
+
+### Core Functions
+
+**Backend (Server-Side Logic):**
+
+*   `initialize_game(player_names)`: Sets up the game with the list of players, initializes scores.
+*   `start_new_round()`:
+    *   Selects the next player to be the drawer.
+    *   Picks a random word from a predefined list (e.g., a text file or an array).
+    *   Resets the round timer.
+    *   Notifies players about the new round and who is drawing.
+*   `get_word_for_drawer()`: Provides the secret word only to the current drawer.
+*   `broadcast_drawing_data(drawing_data)`: Receives drawing actions (lines, colors, etc.) from the drawer and sends them to all guessers in real-time.
+*   `receive_guess(player_name, guess)`:
+    *   Checks if the guess matches the secret word (case-insensitive, maybe some simple fuzzy matching for typos).
+    *   If correct:
+        *   Awards points to the guesser and drawer.
+        *   Ends the round.
+        *   Broadcasts that the word was guessed and by whom.
+    *   If incorrect:
+        *   Broadcasts the guess to all players.
+*   `handle_timer_expiration()`: Ends the round if the timer runs out, reveals the word.
+*   `manage_player_connections()`: Handle players joining and leaving.
+*   `get_game_state()`: A function that clients can call (or the server pushes) to get the current state (scores, current drawer, drawing, etc.).
+
+**Frontend (Client-Side Logic - JavaScript):**
+
+*   **Drawer:**
+    *   `send_drawing_data()`: Captures mouse/touch events on the canvas and sends coordinates/actions to the server.
+    *   `render_drawing_tools()`: UI for selecting pen, color, eraser.
+*   **Guesser:**
+    *   `receive_drawing_data()`: Gets drawing data from the server and renders it on their local canvas.
+    *   `submit_guess()`: Sends the typed guess to the server.
+*   **Common:**
+    *   `update_ui(game_state)`: Refreshes the screen display (timer, scores, whose turn it is, guesses, drawing).
+    *   `handle_server_messages()`: Listens for messages from the server (new round, word guessed, drawing updates, etc.) and triggers UI updates.
+
+### Tech Stack (Super Simple & Locally Hosted)
+
+*   **Frontend (what runs in the browser):**
+    *   **HTML:** For the structure of your pages.
+    *   **CSS:** For styling and making it look nice.
+    *   **JavaScript:** For all the client-side game logic, handling user input, drawing on the canvas, and communicating with the backend.
+        *   **Canvas API:** For the drawing board.
+
+*   **Backend (what runs on one person's computer and serves the game):**
+    *   **Python** with **Flask** or **FastAPI**:
+        *   **Why:** Python is relatively easy to get started with. Flask and FastAPI are lightweight web frameworks perfect for this kind of small application. They can serve the HTML/CSS/JS files and handle the game logic.
+        *   You'll also need a WebSocket library for Python (e.g., `Flask-SocketIO` for Flask, or built-in support in FastAPI/Starlette).
+    *   *Alternative: Node.js with Express.js:*
+        *   **Why:** If you're more comfortable with JavaScript, Node.js allows you to write both your frontend and backend in the same language. Express.js is a popular framework, and libraries like `Socket.IO` are excellent for WebSockets.
+
+*   **Real-time Communication:**
+    *   **WebSockets:** This is essential for the real-time drawing updates and guess submissions. Both Python (with Flask-SocketIO or similar) and Node.js (with Socket.IO) have great support for WebSockets.
+
+*   **Word List:**
+    *   A simple **text file** (`words.txt`) where each line is a word. The backend will read from this file.
+    *   Or, a hardcoded **array/list** of words directly in your backend code if the list isn't too long.
+
+**How Local Hosting Works:**
+
+1.  One person (the "host") runs the backend server application on their computer.
+2.  The host finds their local IP address (e.g., `192.168.1.100`).
+3.  Other players on the same Wi-Fi network open their web browsers and go to `http://<host_ip_address>:<port>` (e.g., `http://192.168.1.100:5000` if Flask is running on port 5000).
+4.  The backend server serves the HTML, CSS, and JavaScript files to everyone, and manages the game state and WebSocket connections.
+
+This plan should give you a solid foundation. The key is to start with the most basic version (e.g., just getting drawing to broadcast, then adding guessing) and build up features incrementally.
+
+Would you like to dive deeper into any specific part, like the structure of the Python/Flask app or how WebSockets might work in this context?
